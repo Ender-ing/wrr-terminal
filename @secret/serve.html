@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" style="background-color: black;">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal | Ender.ing</title>
+    <!-- Web Terminal UI -->
+    <!-- Note to self: move these resources to the "resoruces.ender.ing" subdomain -->
+    <script src="/@secret/jquery.js"></script>
+    <script src="/@secret/jquery.terminal.min.js"></script>
+    <link rel="stylesheet" href="/@secret/jquery.terminal.min.css" />
+</head>
+
+<body style="background-color: black;">
+    <template id="greetings">
+        ▄───▄
+        █▀█▀█
+        █▄█▄█
+        ─███──▄▄
+        ─████▐█─█
+        ─████───█
+        ─▀▀▀▀▀▀▀
+    </template>
+    <script type="text/javascript">
+        $('body').terminal({
+            reload: function () {
+                window.location.reload();
+            },
+            login: function (a) {
+                // Get URL
+                let url = null;
+                let ifastnet = [0, "i", "ifast", "ifastnet", "net"],
+                    cpanel = [1, "c", "panel", "cpanel"],
+                    webmail = [2, "m", "wm", "mail", "webmail"],
+                    mofh = [3, "mofh", "free", "myhost", "freehost", "myfreehost", "myownfreehost"],
+                    sitesCpanel = [4, "sc", "s-cpanel", "s-panel", "sites-c", "sites-cpanel", "sites-panel"];
+                if (ifastnet.includes(a)) {
+                    url = "https://ifastnet.com/portal/clientarea.php";
+                } else if (cpanel.includes(a)) {
+                    url = "https://cpanel.ender.ing/";
+                } else if (webmail.includes(a)) {
+                    url = "https://webmail.ender.ing/";
+                } else if (mofh.includes(a)) {
+                    url = "https://panel.myownfreehost.net/index.php";
+                } else if (sitesCpanel.includes(a)) {
+                    url = "http://cpanel.web-page.click/";
+                }
+                // Check Input
+                if (typeof url == "string") {
+                    this.echo(`[[;lightslategray;]Opening link... (${url})]`);
+                    window.open(url);
+                } else if (a == "help" || a == "h") {
+                    this.echo(`[[;antiquewhite;]${"(Website/Service)\t\t<keywords>\n\n\t" +
+                        "iFastNet site\t\t\t" + ifastnet.join() + "\n\t" +
+                        "Server cPanel\t\t\t" + cpanel.join() + "\n\t" +
+                        "Server WebMail\t\t\t" + webmail.join() + "\n\t" +
+                        "Sites (MOFH)\t\t\t" + mofh.join() + "\n\t" +
+                        "Sites cPanel\t\t\t" + sitesCpanel.join() + "\n"
+                        }]`);
+                } else {
+                    this.echo(`[[;red;]Incorrect 'login' input!]`);
+                }
+            },
+            help: function () {
+                sendTerminalCommand("help", this,
+                    "\nThis is a list of local client commands:\n\n" +
+                    "\tclear\t\t\t\tClear terminal contents\n" +
+                    "\treload\t\t\t\tReload terminal (page reload)\n" +
+                    "\tlogin\t\t\t\tLogin links (use 'login help' for more info)"
+                );
+            },
+            get: function () {
+                sendTerminalCommand("get", this);
+            },
+            commit: function () {
+                sendTerminalCommand("commit", this);
+            },
+            rollback: function () {
+                sendTerminalCommand("rollback", this);
+            },
+            discard: function () {
+                sendTerminalCommand("discard", this);
+            },
+            cache: function () {
+                sendTerminalCommand("cache", this);
+            },
+            block: function () {
+                sendTerminalCommand("block", this);
+            },
+            unblock: function () {
+                sendTerminalCommand("unblock", this);
+            },
+            clean: function(){
+                sendTerminalCommand("clean", this);
+            },
+            web: function () {
+                sendTerminalCommand("web", this);
+            }
+        }, {
+
+            completion: true,
+            prompt: "[[;lightsalmon;]endering] [[;white;]>] ",
+            greetings: `[[;lightslategray;]${greetings.innerHTML}]` + '\n[[;fuchsia;]'
+                + 'SERVER TERMINAL v0.1\n\n'
+                + 'This is a simple bridge that enables access to the most commonly used server commands (iFastNet - ender.ing)!\n'
+                + 'Remember to be mindful when you deal with the available assortment of commands here.]\n'
+                + '[[;yellow;]WARNING: NEVER GIVE ANYONE ACCESS TO THIS PAGE!]\n\n'
+                + '[[;fuchsia;]Use the ]\'[[;green;]help]\'[[;fuchsia;] command to view a list of available commands!]\n'
+        });
+    </script>
+
+    <script type="text/javascript">
+        // Only allow once SSE connection!
+        let sse = null;
+        function sendTerminalCommand(cmd, terminal, end = null) {
+            // Pause terminal
+            terminal.pause();
+            // Prepare SSE URL
+            const url = new URL(`https://${window.location.host}/@secret/event.php`);
+            url.searchParams.append("cmd", cmd);
+            // Connect to SSE
+            const eventSource = new EventSource(url);
+            if (sse != null) {
+                sse.close();
+            }
+            sse = eventSource
+
+            const close = function () {
+                terminal.resume();
+                eventSource.close();
+            };
+
+            // Show output
+            const OUTPUT = ["@END", "@SUCCESS", "@UNKNOWN", "@ERROR"];
+            eventSource.onmessage = function (e) {
+                // Close when needed
+                let data = e.data.replaceAll(/\s/gim, "");
+                if (OUTPUT.includes(data)) {
+                    if (OUTPUT.indexOf(data) > 1) {
+                        terminal.echo('[[;lightslategray;]' + $.terminal.escape_formatting(e.data) + ']');
+                    }
+                    if (data == OUTPUT[0]) {
+                        close();
+                    }
+                    if (data == OUTPUT[1]) {
+                        // Print end message
+                        if (end != null) {
+                            terminal.echo(`[[;antiquewhite;]${end}]`);
+                        }
+                    }
+                } else {
+                    terminal.echo(`[[;antiquewhite;]${e.data}]`);
+                }
+            };
+
+            // Detect SSE start
+            eventSource.onopen = function (e) {
+                terminal.pause();
+            };
+
+            // Handle SSE protocol errors
+            eventSource.onerror = function (e) {
+                close();
+                console.error(e);
+            };
+        }
+    </script>
+</body>
+
+</html>

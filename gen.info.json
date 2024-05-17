@@ -1,0 +1,10 @@
+{
+    "name": {
+        "long": "Terminal (Technical)",
+        "short": "Terminal"
+    },
+    "version": "0.0.0",
+    "web": {
+        "host": "terminal.ender.ing"
+    }
+}

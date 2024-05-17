@@ -1,0 +1,5 @@
+{
+    "title": "Server Terminal",
+    "description": "The terminal is used to run custom server commands, without the need to sign into the server's hosting account.",
+    "button_text": "Open Terminal"
+}
