@@ -89,7 +89,7 @@ $ENDERING = "~/endering.bash";
 $cmd;
 // Process commands
 // Blacklist: clean-records
-$enderingAllowlist = array("help", "get", "commit", "rollback", "discard", "cache", "block", "unblock", "web", "clean");
+$enderingAllowlist = array("help", "get", "commit", "rollback", "discard", "cache", "block", "unblock", "web", "clean", "fix-perms");
 if(in_array($input[0], $enderingAllowlist)){
     $cmd = $ENDERING." ".$input[0];
 }
