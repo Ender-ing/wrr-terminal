@@ -14,6 +14,22 @@
 </head>
 
 <body style="background-color: black;">
+    <script type="text/javascript">
+        (async function() {
+            // Get version
+            let version = "?";
+            try{
+                // Register service worker
+                const wb = new Workbox('/sw.js');
+                wb.register();
+
+                // Get service version
+                version = await wb.messageSW({ type: 'GET-SERVICE-VERSION' });
+            }catch{}
+
+            loadTerminal(version);
+        })();
+    </script>
     <template id="greetings">
         ▄───▄
         █▀█▀█
@@ -24,94 +40,96 @@
         ─▀▀▀▀▀▀▀
     </template>
     <script type="text/javascript">
-        $('body').terminal({
-            reload: function () {
-                window.location.reload();
-            },
-            login: function (a) {
-                // Get URL
-                let url = null;
-                let ifastnet = [0, "i", "ifast", "ifastnet", "net"],
-                    cpanel = [1, "c", "panel", "cpanel"],
-                    webmail = [2, "m", "wm", "mail", "webmail"],
-                    mofh = [3, "mofh", "free", "myhost", "freehost", "myfreehost", "myownfreehost"],
-                    sitesCpanel = [4, "sc", "s-cpanel", "s-panel", "sites-c", "sites-cpanel", "sites-panel"];
-                if (ifastnet.includes(a)) {
-                    url = "https://ifastnet.com/portal/clientarea.php";
-                } else if (cpanel.includes(a)) {
-                    url = "https://cpanel.ender.ing/";
-                } else if (webmail.includes(a)) {
-                    url = "https://webmail.ender.ing/";
-                } else if (mofh.includes(a)) {
-                    url = "https://panel.myownfreehost.net/index.php";
-                } else if (sitesCpanel.includes(a)) {
-                    url = "http://cpanel.web-page.click/";
+        const loadTerminal = (version) => {
+            $('body').terminal({
+                reload: function () {
+                    window.location.reload();
+                },
+                login: function (a) {
+                    // Get URL
+                    let url = null;
+                    let ifastnet = [0, "i", "ifast", "ifastnet", "net"],
+                        cpanel = [1, "c", "panel", "cpanel"],
+                        webmail = [2, "m", "wm", "mail", "webmail"],
+                        mofh = [3, "mofh", "free", "myhost", "freehost", "myfreehost", "myownfreehost"],
+                        sitesCpanel = [4, "sc", "s-cpanel", "s-panel", "sites-c", "sites-cpanel", "sites-panel"];
+                    if (ifastnet.includes(a)) {
+                        url = "https://ifastnet.com/portal/clientarea.php";
+                    } else if (cpanel.includes(a)) {
+                        url = "https://cpanel.ender.ing/";
+                    } else if (webmail.includes(a)) {
+                        url = "https://webmail.ender.ing/";
+                    } else if (mofh.includes(a)) {
+                        url = "https://panel.myownfreehost.net/index.php";
+                    } else if (sitesCpanel.includes(a)) {
+                        url = "http://cpanel.web-page.click/";
+                    }
+                    // Check Input
+                    if (typeof url == "string") {
+                        this.echo(`[[;lightslategray;]Opening link... (${url})]`);
+                        window.open(url);
+                    } else if (a == "help" || a == "h") {
+                        this.echo(`[[;antiquewhite;]${"(Website/Service)\t\t<keywords>\n\n\t" +
+                            "iFastNet site\t\t\t" + ifastnet.join() + "\n\t" +
+                            "Server cPanel\t\t\t" + cpanel.join() + "\n\t" +
+                            "Server WebMail\t\t\t" + webmail.join() + "\n\t" +
+                            "Sites (MOFH)\t\t\t" + mofh.join() + "\n\t" +
+                            "Sites cPanel\t\t\t" + sitesCpanel.join() + "\n"
+                            }]`);
+                    } else {
+                        this.echo(`[[;red;]Incorrect 'login' input!]`);
+                    }
+                },
+                help: function () {
+                    sendTerminalCommand("help", this,
+                        "\nThis is a list of local client commands:\n\n" +
+                        "\tclear\t\t\t\tClear terminal contents\n" +
+                        "\treload\t\t\t\tReload terminal (page reload)\n" +
+                        "\tlogin\t\t\t\tLogin links (use 'login help' for more info)"
+                    );
+                },
+                get: function () {
+                    sendTerminalCommand("get", this);
+                },
+                commit: function () {
+                    sendTerminalCommand("commit", this);
+                },
+                rollback: function () {
+                    sendTerminalCommand("rollback", this);
+                },
+                discard: function () {
+                    sendTerminalCommand("discard", this);
+                },
+                cache: function () {
+                    sendTerminalCommand("cache", this);
+                },
+                block: function () {
+                    sendTerminalCommand("block", this);
+                },
+                unblock: function () {
+                    sendTerminalCommand("unblock", this);
+                },
+                clean: function () {
+                    sendTerminalCommand("clean", this);
+                },
+                "fix-perms": function () {
+                    sendTerminalCommand("fix-perms", this);
+                },
+                web: function () {
+                    sendTerminalCommand("web", this);
                 }
-                // Check Input
-                if (typeof url == "string") {
-                    this.echo(`[[;lightslategray;]Opening link... (${url})]`);
-                    window.open(url);
-                } else if (a == "help" || a == "h") {
-                    this.echo(`[[;antiquewhite;]${"(Website/Service)\t\t<keywords>\n\n\t" +
-                        "iFastNet site\t\t\t" + ifastnet.join() + "\n\t" +
-                        "Server cPanel\t\t\t" + cpanel.join() + "\n\t" +
-                        "Server WebMail\t\t\t" + webmail.join() + "\n\t" +
-                        "Sites (MOFH)\t\t\t" + mofh.join() + "\n\t" +
-                        "Sites cPanel\t\t\t" + sitesCpanel.join() + "\n"
-                        }]`);
-                } else {
-                    this.echo(`[[;red;]Incorrect 'login' input!]`);
-                }
-            },
-            help: function () {
-                sendTerminalCommand("help", this,
-                    "\nThis is a list of local client commands:\n\n" +
-                    "\tclear\t\t\t\tClear terminal contents\n" +
-                    "\treload\t\t\t\tReload terminal (page reload)\n" +
-                    "\tlogin\t\t\t\tLogin links (use 'login help' for more info)"
-                );
-            },
-            get: function () {
-                sendTerminalCommand("get", this);
-            },
-            commit: function () {
-                sendTerminalCommand("commit", this);
-            },
-            rollback: function () {
-                sendTerminalCommand("rollback", this);
-            },
-            discard: function () {
-                sendTerminalCommand("discard", this);
-            },
-            cache: function () {
-                sendTerminalCommand("cache", this);
-            },
-            block: function () {
-                sendTerminalCommand("block", this);
-            },
-            unblock: function () {
-                sendTerminalCommand("unblock", this);
-            },
-            clean: function(){
-                sendTerminalCommand("clean", this);
-            },
-            "fix-perms": function(){
-                sendTerminalCommand("fix-perms", this);
-            },
-            web: function () {
-                sendTerminalCommand("web", this);
-            }
-        }, {
+            }, {
 
-            completion: true,
-            prompt: "[[;lightsalmon;]endering] [[;white;]>] ",
-            greetings: `[[;lightslategray;]${greetings.innerHTML}]` + '\n[[;fuchsia;]'
-                + 'SERVER TERMINAL v0.1\n\n'
-                + 'This is a simple bridge that enables access to the most commonly used server commands (iFastNet - ender.ing)!\n'
-                + 'Remember to be mindful when you deal with the available assortment of commands here.]\n'
-                + '[[;yellow;]WARNING: NEVER GIVE ANYONE ACCESS TO THIS PAGE!]\n\n'
-                + '[[;fuchsia;]Use the ]\'[[;green;]help]\'[[;fuchsia;] command to view a list of available commands!]\n'
-        });
+                completion: true,
+                prompt: "[[;lightsalmon;]endering] [[;white;]>] ",
+                greetings: `[[;lightslategray;]${greetings.innerHTML}]` + '\n[[;fuchsia;]'
+                    + 'SERVER TERMINAL v' + version + '\n\n'
+                    + 'This is a simple bridge that enables access to the most commonly used server commands (iFastNet - ender.ing)!\n'
+                    + 'Remember to be mindful when you deal with the available assortment of commands here.]\n'
+                    + '[[;yellow;]WARNING: NEVER GIVE ANYONE ACCESS TO THIS PAGE!]\n\n'
+                    + '[[;fuchsia;]Use the ]\'[[;green;]help]\'[[;fuchsia;] command to view a list of available commands!]\n'
+            });
+        };
     </script>
 
     <script type="text/javascript">
