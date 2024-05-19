@@ -14,22 +14,6 @@
 </head>
 
 <body style="background-color: black;">
-    <script type="text/javascript">
-        (async function() {
-            // Get version
-            let version = "?";
-            try{
-                // Register service worker
-                const wb = new Workbox('/sw.js');
-                wb.register();
-
-                // Get service version
-                version = await wb.messageSW({ type: 'GET-SERVICE-VERSION' });
-            }catch{}
-
-            loadTerminal(version);
-        })();
-    </script>
     <template id="greetings">
         ▄───▄
         █▀█▀█
@@ -187,6 +171,23 @@
                 console.error(e);
             };
         }
+    </script>
+
+    <script type="text/javascript">
+        (async function () {
+            // Get version
+            let version = "?";
+            try {
+                // Register service worker
+                const wb = new Workbox('/sw.js');
+                wb.register();
+
+                // Get service version
+                version = await wb.messageSW({ type: 'GET-SERVICE-VERSION' });
+            } catch { }
+
+            loadTerminal(version);
+        })();
     </script>
 </body>
 
