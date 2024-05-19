@@ -3,7 +3,7 @@
         "long": "Terminal (Technical)",
         "short": "Terminal"
     },
-    "version": "0.0.0",
+    "version": "@@version",
     "web": {
         "host": "terminal.ender.ing"
     }
