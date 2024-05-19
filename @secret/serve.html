@@ -174,20 +174,96 @@
     </script>
 
     <script type="text/javascript">
+        // None of the service worker communication code is working!
+        loadTerminal("0.1");
         (async function () {
-            // Get version
-            let version = "?";
-            try {
-                // Register service worker
-                const wb = new Workbox('/sw.js');
-                wb.register();
-
-                // Get service version
-                version = await wb.messageSW({ type: 'GET-SERVICE-VERSION' });
-            } catch { }
-
-            loadTerminal(version);
+            // Register service worker
+            if ("serviceWorker" in navigator) {
+                try {
+                    await navigator.serviceWorker.register("/sw.js", {
+                        scope: "/",
+                    });
+                    await wait();
+                } catch (error) {
+                    console.warn('SW Registration failed', error);
+                }
+            }
         })();
+        const wait = (async function () {
+            // Get version
+            try {
+                window.addEventListener('message', event => {
+                    if (event.source !== navigator.serviceWorker) {
+                        return; // Ignore messages not from service worker
+                    }
+
+                    const message = event.data;
+                    console.log('Message received from service worker:', message);
+
+                    // Process the message data as needed
+                    // Update the document based on the message content
+                    if (message.type === 'GET-SERVICE-VERSION') {
+                        console.log(message);
+                        // loadTerminal("xx");
+                    }
+                });
+
+                // START Wait
+                if (!navigator.serviceWorker) {
+                    console.error('Service workers not supported.');
+                    return;
+                }
+                function waitForController() {
+                    return new Promise((resolve, reject) => {
+                        const controllerchangeHandler = () => {
+                            navigator.serviceWorker.removeEventListener('controllerchange', controllerchangeHandler);
+                            resolve(navigator.serviceWorker.controller); // Resolve with the new controller
+                        };
+
+                        navigator.serviceWorker.addEventListener('controllerchange', controllerchangeHandler);
+
+                        navigator.serviceWorker.ready
+                            .then(registration => {
+                                if (registration.installing) {
+                                    console.log('Service worker is installing...');
+                                    return registration.installing.controlling.promise; // Wait for installation to finish
+                                } else if (registration.waiting) {
+                                    console.log('A waiting service worker is detected.');
+                                    return registration.waiting.activate.promise; // Wait for activation
+                                } else if (navigator.serviceWorker.controller) {
+                                    // Controller already available, resolve immediately
+                                    resolve(navigator.serviceWorker.controller);
+                                } else {
+                                    // Reject if no controller after ready (unlikely)
+                                    reject(new Error('No service worker controller found'));
+                                }
+                            })
+                            .catch(error => {
+                                navigator.serviceWorker.removeEventListener('controllerchange', controllerchangeHandler);
+                                reject(error); // Reject on registration or activation errors
+                            });
+                    });
+                }
+
+                // END Wait
+
+                // Wait for controller
+                (async () => {
+                    try {
+                        const controller = await waitForController();
+                        console.log('Service worker controller is ready:', controller);
+                        controller.postMessage({
+                            type: 'GET-SERVICE-VERSION',
+                        });
+                    } catch (error) {
+                        console.error('Error waiting for service worker:', error);
+                        //loadTerminal("???");
+                    }
+                })();
+            } catch (e) {
+                console.error(e);
+            }
+        });
     </script>
 </body>
 
