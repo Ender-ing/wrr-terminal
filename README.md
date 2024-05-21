@@ -1,3 +1,3 @@
 # terminal
 
-- [Server web terminal](https://terminal.ender.ing/@secret/)
+- [Server web terminal](https://terminal.ender.ing/)
