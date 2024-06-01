@@ -2,8 +2,8 @@
     <div slot="group">
         <x-pane view="full">
             <h1>{{title}}</h1>
-            <text>{{description}}</text>
             <divider />
+            <text>{{description}}</text>
             <text-button href="/@secret/serve.html">{{button_text}}</text-button>
         </x-pane>
     </div>
