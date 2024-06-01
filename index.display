@@ -4,6 +4,7 @@
             <h1>{{title}}</h1>
             <divider />
             <text>{{description}}</text>
+            <br/>
             <text-button href="/@secret/serve.html">{{button_text}}</text-button>
         </x-pane>
     </div>
