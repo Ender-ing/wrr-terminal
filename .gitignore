@@ -1,2 +1,7 @@
+# temporary files
 gen.version.txt
-*.secret.*
+
+# modified secret build files
+**.secret.**
+secret.**
+**.secret
