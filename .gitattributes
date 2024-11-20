@@ -1,0 +1,3 @@
+# Render Activity files
+*.display linguist-language=XML
+*.locale linguist-language=JSON
