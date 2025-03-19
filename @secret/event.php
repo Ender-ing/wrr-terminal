@@ -76,7 +76,8 @@ function commandError($e){
 // Process "cmd" query
 $input = null;
 $extraInputs = 0;
-$inputText = filter_input(INPUT_GET, 'cmd', FILTER_SANITIZE_STRING);
+$inputText = urldecode(filter_input(INPUT_GET, 'cmd', FILTER_SANITIZE_STRING));
+
 if(isset($inputText)){
     // Check for the number of expected command argument value inputs
     while($inputText[0] == "+"){
@@ -91,6 +92,9 @@ if(isset($inputText)){
     // Separate by whitespace
     $input = preg_split('/\s+/', $inputText);
     $inputLen = count($input);
+    for($i = 0; $i < $inputLen; $i++){
+        $input[$i] = trim($input[$i]);
+    }
 
     // Always expecting a minimum of one whitespace!
     if($inputLen !== (2 + $extraInputs)){
@@ -116,19 +120,21 @@ for ($i = 0; $i < $allowlistLen; $i++) {
     if($input[0] === $allowlist[$i][0]){
         // Check if the sub-command is allowed!
         $index = array_search($input[1], $allowlist[$i][2]);
-        if($index != false && $index >= 0){
+        if($index !== false && $index >= 0){
             // Check if the number of expected inputs matches the hardcoded value!
-            if($allowlist[$i][2][$index + 1] === $extraInputs){
+            $extra = "";
+            if($allowlist[$i][2][$index + 1] === $extraInputs || is_string($allowlist[$i][2][$index + 1])){
                 // Get all extra arguments
-                $extra = "";
                 for($t = 0; $t < $extraInputs;){
                     $extra .= (" ".$input[1 + ++$t]);
                 }
-                // Get the final command!
-                $cmd = $allowlist[$i][1]." ".$input[1].$extra;
             }else{
                 commandError("Did not expect this number of command arguments! (Expecting ".$extraInputs." argument(s))");
             }
+            // Get the final command!
+            $cmd = $allowlist[$i][1]." ".$input[1].$extra;
+        }else{
+            commandError("Unknown command!");
         }
     }
 }
