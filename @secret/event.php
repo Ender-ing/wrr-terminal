@@ -80,7 +80,7 @@ $inputText = urldecode(filter_input(INPUT_GET, 'cmd', FILTER_SANITIZE_STRING));
 
 if(isset($inputText)){
     // Check for the number of expected command argument value inputs
-    while($inputText[0] == "+"){
+    while($inputText[0] === "0"){
         $inputText = substr($inputText, 1);
         $extraInputs++;
     }
