@@ -12,9 +12,15 @@
     <title>Terminal | Ender.ing</title>
     <!-- Web Terminal UI -->
     <!-- Note to self: move these resources to the "resoruces.ender.ing" subdomain -->
+     <!--
     <script src="/@secret/jquery.js"></script>
     <script src="/@secret/jquery.terminal.min.js"></script>
     <link rel="stylesheet" href="/@secret/jquery.terminal.min.css" />
+-->
+<script src="jquery.js"></script>
+<script src="jquery.terminal.min.js"></script>
+<link rel="stylesheet" href="jquery.terminal.min.css" />
+
 </head>
 
 <body style="background-color: black;">
@@ -28,10 +34,96 @@
         ─▀▀▀▀▀▀▀
     </template>
     <script type="text/javascript">
-        const loadTerminal = (version) => {
-            $('body').terminal({
+        // Get prompt title
+        const SERVER = "[[;deepskyblue;]Server]";
+        const GITHUB = "[[;lawngreen;]GitHub]";
+        const getPromptTitle = (title = null) => {
+            return `[[;lightsalmon;]Ender-ing] ${(title) ? (title + " ") : ""}[[;white;]>] `
+        };
+        // Global Commands
+        const sharedCommands = (isRoot = false) => {
+            let list = {
                 reload: function () {
                     window.location.reload();
+                }
+            };
+            if(!isRoot){
+                list.back = function(){
+                    this.pop();
+                };
+            }
+            return list;
+        };
+        // Global help text
+        const LOCAL_HELP = (isRoot = false, ...extra) => {
+            return "\nThis is a list of local client commands:\n\n" +
+                ((extra != undefined && extra.length > 0) ? extra.join() : "") +
+                ((!isRoot) ? "\tback\t\t\t\tExit current command mode and go back to the previous mode!\n" : "") +
+                "\tclear\t\t\t\tClear terminal contents\n" +
+                "\treload\t\t\t\tReload terminal (page reload)\n";
+        };
+        const loadTerminal = (version) => {
+            $('body').terminal({
+                server: function() {
+                    this.push({
+                        get: function () {
+                            sendTerminalCommand("endering get", this);
+                        },
+                        commit: function () {
+                            sendTerminalCommand("endering commit", this);
+                        },
+                        rollback: function () {
+                            sendTerminalCommand("endering rollback", this);
+                        },
+                        discard: function () {
+                            sendTerminalCommand("endering discard", this);
+                        },
+                        cache: function () {
+                            sendTerminalCommand("endering cache", this);
+                        },
+                        block: function () {
+                            sendTerminalCommand("endering block", this);
+                        },
+                        unblock: function () {
+                            sendTerminalCommand("endering unblock", this);
+                        },
+                        clean: function () {
+                            sendTerminalCommand("endering clean", this);
+                        },
+                        "fix-perms": function () {
+                            sendTerminalCommand("endering fix-perms", this);
+                        },
+                        full: function () {
+                            sendTerminalCommand("endering full", this);
+                        },
+                        help: function(){
+                            sendTerminalCommand("endering help", this,
+                                LOCAL_HELP()
+                            );
+                        },
+                        ...sharedCommands()
+                    }, {
+                        completion: true,
+                        prompt: getPromptTitle(SERVER),
+                    }
+                    );
+                },
+                github: function() {
+                    this.push({
+                        release: function(repo){
+                            sendTerminalCommand(`+github release ${repo}`, this);
+                        },
+                        help: function(){
+                            sendTerminalCommand("github help", this,
+                                LOCAL_HELP()
+                            );
+                        },
+                        ...sharedCommands()
+                    }, {
+                        completion: true,
+                        prompt: getPromptTitle(GITHUB),
+                    }
+                    );
                 },
                 login: function (a) {
                     // Get URL
@@ -69,50 +161,23 @@
                     }
                 },
                 help: function () {
-                    sendTerminalCommand("help", this,
-                        "\nThis is a list of local client commands:\n\n" +
-                        "\tclear\t\t\t\tClear terminal contents\n" +
-                        "\treload\t\t\t\tReload terminal (page reload)\n" +
-                        "\tlogin\t\t\t\tLogin links (use 'login help' for more info)"
-                    );
+                    this.echo(`[[;antiquewhite;]${
+                        "Server-side commands:\n\n" +
+                        `\t${SERVER}\t\t\t\tWeb server commands (iFastNet/Cloudflare, use 'server' then 'help' for more info)\n` +
+                        `\t${GITHUB}\t\t\t\tGitHub commands (Ender-ing organisation, use 'github' then 'help' for more info)\n` +
+                        LOCAL_HELP(true, 
+                            "\tlogin\t\t\t\tLogin links (use 'login help' for more info)\n"
+                        )
+                    }]`);
                 },
-                get: function () {
-                    sendTerminalCommand("get", this);
-                },
-                commit: function () {
-                    sendTerminalCommand("commit", this);
-                },
-                rollback: function () {
-                    sendTerminalCommand("rollback", this);
-                },
-                discard: function () {
-                    sendTerminalCommand("discard", this);
-                },
-                cache: function () {
-                    sendTerminalCommand("cache", this);
-                },
-                block: function () {
-                    sendTerminalCommand("block", this);
-                },
-                unblock: function () {
-                    sendTerminalCommand("unblock", this);
-                },
-                clean: function () {
-                    sendTerminalCommand("clean", this);
-                },
-                "fix-perms": function () {
-                    sendTerminalCommand("fix-perms", this);
-                },
-                web: function () {
-                    sendTerminalCommand("web", this);
-                }
+                ...sharedCommands(true)
             }, {
 
                 completion: true,
-                prompt: "[[;lightsalmon;]endering] [[;white;]>] ",
+                prompt: getPromptTitle(),
                 greetings: `[[;lightslategray;]${greetings.innerHTML}]` + '\n[[;fuchsia;]'
-                    + 'SERVER TERMINAL v' + version + '\n\n'
-                    + 'This is a simple bridge that enables access to the most commonly used server commands (iFastNet - ender.ing)!\n'
+                    + 'ENDER TERMINAL v' + version + '\n\n'
+                    + 'This is a simple bridge that enables access to the most commonly used development commands!\n'
                     + 'Remember to be mindful when you deal with the available assortment of commands here.]\n'
                     + '[[;yellow;]WARNING: NEVER GIVE ANYONE ACCESS TO THIS PAGE!]\n\n'
                     + '[[;fuchsia;]Use the ]\'[[;green;]help]\'[[;fuchsia;] command to view a list of available commands!]\n'
@@ -179,7 +244,7 @@
 
     <script type="text/javascript">
         // None of the service worker communication code is working!
-        loadTerminal("0.1");
+        loadTerminal("0.2");
         (async function () {
             // Register service worker
             if ("serviceWorker" in navigator) {

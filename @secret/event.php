@@ -75,23 +75,62 @@ function commandError($e){
 
 // Process "cmd" query
 $input = null;
+$extraInputs = 0;
 $inputText = filter_input(INPUT_GET, 'cmd', FILTER_SANITIZE_STRING);
 if(isset($inputText)){
+    // Check for the number of expected command argument value inputs
+    while($inputText[0] == "+"){
+        $inputText = substr($inputText, 1);
+        $extraInputs++;
+    }
+    // Check for any injection attempts!
+    if(preg_match('/[^A-z\s\-\/]+/', $inputText) === 1){
+        commandError("Suspecting a command injection! Terminating execution!");
+    }
+
+    // Separate by whitespace
     $input = preg_split('/\s+/', $inputText);
+    $inputLen = count($input);
+
+    // Always expecting a minimum of one whitespace!
+    if($inputLen !== (2 + $extraInputs)){
+        commandError("Expecting more command arguments!");
+    }
 }else{
     endSSE();
 }
 
-// Command files!
-$ENDERING = "~/endering.bash";
-
 // Generate final shell command
 $cmd;
 // Process commands
-// Blacklist: clean-records
-$enderingAllowlist = array("help", "get", "commit", "rollback", "discard", "cache", "block", "unblock", "web", "clean", "fix-perms");
-if(in_array($input[0], $enderingAllowlist)){
-    $cmd = $ENDERING." ".$input[0];
+$allowlist = array(
+    // "endering" command
+    // Blacklist: clean-records
+    array("endering", "~/endering.bash", array("help", "get", "commit", "rollback", "discard", "cache", "block", "unblock", "full", "clean", "fix-perms")),
+    // "github" command
+    array("github", "~/github.bash", array("help", "release", 1))
+);
+$allowlistLen = count($allowlist);
+// Check if the root command is allowed!
+for ($i = 0; $i < $allowlistLen; $i++) {
+    if($input[0] === $allowlist[$i][0]){
+        // Check if the sub-command is allowed!
+        $index = array_search($input[1], $allowlist[$i][2]);
+        if($index != false && $index >= 0){
+            // Check if the number of expected inputs matches the hardcoded value!
+            if($allowlist[$i][2][$index + 1] === $extraInputs){
+                // Get all extra arguments
+                $extra = "";
+                for($t = 0; $t < $extraInputs;){
+                    $extra .= (" ".$input[1 + ++$t]);
+                }
+                // Get the final command!
+                $cmd = $allowlist[$i][1]." ".$input[1].$extra;
+            }else{
+                commandError("Did not expect this number of command arguments! (Expecting ".$extraInputs." argument(s))");
+            }
+        }
+    }
 }
 
 // Open shell
