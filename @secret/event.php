@@ -110,7 +110,7 @@ $cmd;
 $allowlist = array(
     // "endering" command
     // Blacklist: clean-records
-    array("endering", "~/endering.bash", array("help", "get", "commit", "rollback", "discard", "cache", "block", "unblock", "full", "clean", "fix-perms")),
+    array("endering", "~/endering.bash", array("help", "get", "commit", "rollback", "discard", "test", "cache", "block", "unblock", "full", "clean", "fix-perms")),
     // "github" command
     array("github", "~/github.bash", array("help", "release", 1))
 );
