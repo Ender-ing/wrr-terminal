@@ -12,9 +12,9 @@
     <title>Terminal | Ender.ing</title>
     <!-- Web Terminal UI -->
     <!-- Note to self: move these resources to the "resoruces.ender.ing" subdomain -->
-    <script src="/@secret/jquery.js"></script>
-    <script src="/@secret/jquery.terminal.min.js"></script>
-    <link rel="stylesheet" href="/@secret/jquery.terminal.min.css" />
+    <script src="/jquery.js"></script>
+    <script src="/jquery.terminal.min.js"></script>
+    <link rel="stylesheet" href="/jquery.terminal.min.css" />
 
 </head>
 
@@ -190,7 +190,7 @@
             // Pause terminal
             terminal.pause();
             // Prepare SSE URL
-            const url = new URL(`https://${window.location.host}/@secret/event.php`);
+            const url = new URL(`https://${window.location.host}/event.php`);
             url.searchParams.append("cmd", cmd);
             // Connect to SSE
             const eventSource = new EventSource(url);
